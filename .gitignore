@@ -1,0 +1,34 @@
+# Python build artefacts
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.ty_cache/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+.claude/
+
+# Secrets — never commit a populated env file
+.env
+.env.*
+!.env.example
+
+# Project data — large, regeneratable, not part of source
+data/
+artifacts/
