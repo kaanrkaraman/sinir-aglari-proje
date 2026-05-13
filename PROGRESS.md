@@ -1,3 +1,8 @@
+## M2 DONE — 2025-05-13
+56 Q&A pairs curated, advancing to M3.
+
+---
+
 # annrag — Progress & Roadmap
 
 Resumable session log for the Wikivoyage RAG chatbot (Neural Networks course project).
