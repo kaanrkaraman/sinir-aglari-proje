@@ -304,5 +304,84 @@ def main() -> None:
     app()
 
 
+# ── RAG subcommand group (M3+) ────────────────────────────────────────────────
+
+rag_app = typer.Typer(name="rag", help="RAG pipeline commands (M3+).")
+app.add_typer(rag_app)
+
+
+@rag_app.command("chunk")
+def rag_chunk(
+    strategy: Annotated[
+        str,
+        typer.Option(
+            "--strategy",
+            "-s",
+            help="Chunking strategy: fixed_256 | fixed_512 | fixed_1024 | sentence",
+        ),
+    ] = "fixed_512",
+    out: Annotated[
+        Path | None,
+        typer.Option("--out", help="Output JSONL path (default: artifacts/chunks.<strategy>.jsonl)"),
+    ] = None,
+) -> None:
+    """Chunk all raw articles and write chunks to JSONL."""
+    import json as _json
+
+    from annrag.rag.chunking import get_strategy
+    from annrag.rag.loader import load_all_articles
+
+    settings = Settings()
+    raw_dir = settings.data_dir / "groundtruth" / "raw"
+    artifacts_dir = settings.data_dir.parent / "artifacts"
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+
+    out_path = out or (artifacts_dir / f"chunks.{strategy}.jsonl")
+
+    chunker = get_strategy(strategy)
+    articles = load_all_articles(raw_dir)
+
+    total = 0
+    with open(out_path, "w", encoding="utf-8") as f:
+        for page_title, text in articles:
+            chunks = chunker.chunk(page_title, text)
+            for chunk in chunks:
+                f.write(_json.dumps(chunk.model_dump(), ensure_ascii=False) + "\n")
+            total += len(chunks)
+            typer.echo(f"  {page_title}: {len(chunks)} chunks")
+
+    typer.echo(f"\nTotal: {total} chunks → {out_path}")
+
+
+@rag_app.command("stats")
+def rag_stats(
+    path: Annotated[Path, typer.Argument(help="Chunks JSONL file.")],
+) -> None:
+    """Show statistics for a chunks JSONL file."""
+    import json as _json
+
+    chunks = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                chunks.append(_json.loads(line))
+
+    if not chunks:
+        typer.echo("No chunks found.")
+        raise typer.Exit(1)
+
+    token_counts = [c["token_count"] for c in chunks]
+    pages = {c["source_page"] for c in chunks}
+    strategy = chunks[0]["strategy"]
+
+    typer.echo(f"strategy:      {strategy}")
+    typer.echo(f"total chunks:  {len(chunks)}")
+    typer.echo(f"unique pages:  {len(pages)}")
+    typer.echo(f"avg tokens:    {sum(token_counts) / len(token_counts):.1f}")
+    typer.echo(f"min tokens:    {min(token_counts)}")
+    typer.echo(f"max tokens:    {max(token_counts)}")
+
+
 if __name__ == "__main__":
     main()
