@@ -31,8 +31,7 @@ uv run annrag gt models # confirm models are visible
 
 ## Project goal (one paragraph)
 
-Build a RAG travel-guide chatbot over the Wikivoyage XML dump. Multi-turn, context-aware. **Evaluation rigor is the deliverable** — RAGAS (Faithfulness / Answer Relevance / Context Precision / Context Recall) + retrieval-only metrics (MRR, NDCG, Recall@k) over a manually curated 50+ Q&A ground-truth set. The report compares chunking sizes, retrieval strategies (dense / sparse / hybrid / hybrid+rerank), embedding models, top-k, single-turn vs multi-turn, and a no-retrieval baseline.
-
+| 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ✅ done       | MRR=0.26, Recall@5=0.43, NDCG@5=0.35                |
 Working principles (mandatory, see `pyproject.toml` for enforcement):
 - `uv` only — never pip; always `uv add` (let resolver pick versions).
 - `ruff format` + `ruff check` + `ty check` + `pytest` must all pass before any file is "done".
