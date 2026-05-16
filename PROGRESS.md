@@ -47,8 +47,8 @@ Working principles (mandatory, see `pyproject.toml` for enforcement):
 
 | #  | Milestone                                       | Status        | Notes                                                                          |
 | -- | ----------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
-| 1  | Environment setup (uv, ruff, ty, pyproject)     | ✅ done       | hatchling backend, src layout                                                  |
-| 2  | Ground truth dataset (50+ Q&A pairs)            | 🟡 wip        | Infra done; awaiting human curation of generated candidates (see below)        |
+| 1  | Environment setup (uv, ruff, ty, pyproject)     | ✅ done       | hatchling backend, src layout                            
+| 2  | Ground truth dataset (50+ Q&A pairs)            | ✅ done       | 56 Q&A pairs curated (20 cities, Claude API). final.jsonl ready.              | |
 | 3  | Wikivoyage XML ingestion + chunking             | ✅ done       | fixed_256/512/1024 + sentence, 1055 chunks (API)                                                        |
 | 4  | Embedding + vector index                        | ✅ done       | nomic-embed-text, FAISS index, annrag rag embed/search                                                                                |
 | 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ⬜            | Page-level overlap (gold pages ∩ retrieved chunks' source page) — design baked |
