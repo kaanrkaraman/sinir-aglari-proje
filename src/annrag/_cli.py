@@ -474,3 +474,50 @@ def rag_search(
         typer.echo(f"[{i}] Score: {score:.4f} | Page: {chunk.source_page}")
         typer.echo(f"    {chunk.text[:200]}...")
         typer.echo()
+
+
+@rag_app.command("eval")
+def rag_eval(
+    strategy: Annotated[str, typer.Option("--strategy", "-s")] = "fixed_512",
+    model: Annotated[str, typer.Option("--model")] = "nomic-embed-text",
+    top_k: Annotated[int, typer.Option("--top-k", "-k")] = 10,
+    json_out: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """Evaluate retrieval quality: MRR, Recall@k, NDCG@k."""
+    from annrag.rag.metrics import evaluate_retrieval
+
+    settings = Settings()
+    final_jsonl = settings.data_dir / "groundtruth" / "final.jsonl"
+    artifacts_dir = settings.data_dir.parent / "artifacts"
+    slug = model.replace(":", "_").replace("-", "_")
+    index_dir = artifacts_dir / f"index.{strategy}.{slug}"
+
+    if not final_jsonl.exists():
+        typer.echo(f"final.jsonl not found: {final_jsonl}")
+        raise typer.Exit(1)
+
+    if not index_dir.exists():
+        typer.echo(f"Index not found: {index_dir}")
+        typer.echo(f"Run: annrag rag embed --strategy {strategy}")
+        raise typer.Exit(1)
+
+    typer.echo(f"Evaluating retrieval (strategy={strategy}, top_k={top_k})...")
+    metrics = evaluate_retrieval(
+        final_jsonl=final_jsonl,
+        index_dir=index_dir,
+        embedder_model=model,
+        top_k=top_k,
+    )
+
+    if json_out:
+        typer.echo(json.dumps(metrics.to_dict(), indent=2))
+    else:
+        typer.echo("\n" + metrics.render())
+
+    # Save results
+    out_path = artifacts_dir / f"eval.{strategy}.{slug}.json"
+    out_path.write_text(
+        json.dumps(metrics.to_dict(), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    typer.echo(f"\nSaved to {out_path}")
