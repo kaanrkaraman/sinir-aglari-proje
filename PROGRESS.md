@@ -50,7 +50,8 @@ Working principles (mandatory, see `pyproject.toml` for enforcement):
 | 2  | Ground truth dataset (50+ Q&A pairs)            | ✅ done       | 56 Q&A pairs curated (20 cities, Claude API). final.jsonl ready.              | |
 | 3  | Wikivoyage XML ingestion + chunking             | ✅ done       | fixed_256/512/1024 + sentence, 1055 chunks (API)                                                        |
 | 4  | Embedding + vector index                        | ✅ done       | nomic-embed-text, FAISS index, annrag rag embed/search                                                                                |
-| 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ⬜            | Page-level overlap (gold pages ∩ retrieved chunks' source page) — design baked |
+| 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ✅ done       | MRR=0.26, Recall@5=0.43, NDCG@5=0.35 (fixed_512)    |
+
 | 6  | End-to-end RAG pipeline                         | ⬜            |                                                                                |
 | 7  | RAGAS integration                               | ⬜            |                                                                                |
 | 8  | Experiment grid sweep                           | ⬜            | Chunking × retrieval × embedding × top-k matrix                                |
