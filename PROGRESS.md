@@ -45,11 +45,11 @@ Working principles (mandatory, see `pyproject.toml` for enforcement):
 | 3  | Wikivoyage XML ingestion + chunking             | ✅ done       | fixed_256/512/1024 + sentence, 1055 chunks (Wikivoyage API)        |
 | 4  | Embedding + vector index                        | ✅ done       | nomic-embed-text via Ollama, FAISS index                           |
 | 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ✅ done       | MRR=0.26, Recall@5=0.43, NDCG@5=0.35 (fixed_512)                 |
-| 6  | End-to-end RAG pipeline                         | ⬜            |                                                                    |
-| 7  | RAGAS integration                               | ⬜            |                                                                    |
+| 6  | End-to-end RAG pipeline                         | ⬜            | Retrieve top-k → llama3:8b → answer; no-retrieval baseline         |
+| 7  | RAGAS integration                               | ⬜            | Faithfulness, Answer Relevance, Context Precision, Context Recall   |
 | 8  | Experiment grid sweep                           | ⬜            | Chunking × retrieval × embedding × top-k matrix                    |
-| 9  | Multi-turn / context-awareness ablation         | ⬜            |                                                                    |
-| 10 | Polish + reproducible runs + result tables      | ⬜            |                                                                    |
+| 9  | Multi-turn / context-awareness ablation         | ⬜            | Compare single-turn vs multi-turn; cross-document multi-hop         |
+| 10 | Polish + reproducible runs + result tables      | ⬜            | Reproducible scripts, final result tables, report                   |
 
 ---
 
