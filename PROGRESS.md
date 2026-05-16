@@ -49,8 +49,8 @@ Working principles (mandatory, see `pyproject.toml` for enforcement):
 | -- | ----------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
 | 1  | Environment setup (uv, ruff, ty, pyproject)     | ✅ done       | hatchling backend, src layout                                                  |
 | 2  | Ground truth dataset (50+ Q&A pairs)            | 🟡 wip        | Infra done; awaiting human curation of generated candidates (see below)        |
-| 3  | Wikivoyage XML ingestion + chunking             | ⬜ not started | Two open Qs gated below                                                        |
-| 4  | Embedding + vector index                        | ⬜            |                                                                                |
+| 3  | Wikivoyage XML ingestion + chunking             | ✅ done       | fixed_256/512/1024 + sentence, 1055 chunks (API)                                                        |
+| 4  | Embedding + vector index                        | ✅ done       | nomic-embed-text, FAISS index, annrag rag embed/search                                                                                |
 | 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ⬜            | Page-level overlap (gold pages ∩ retrieved chunks' source page) — design baked |
 | 6  | End-to-end RAG pipeline                         | ⬜            |                                                                                |
 | 7  | RAGAS integration                               | ⬜            |                                                                                |
