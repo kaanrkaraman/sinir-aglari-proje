@@ -9,10 +9,12 @@ license = { text = "MIT" }
 
 dependencies = [
     "anthropic>=0.100.0",
+    "faiss-cpu>=1.13.2",
     "httpx>=0.28.1",
     "ollama>=0.6.2",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
+    "tiktoken>=0.13.0",
     "typer>=0.25.1",
 ]
 

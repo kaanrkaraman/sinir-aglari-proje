@@ -385,3 +385,92 @@ def rag_stats(
 
 if __name__ == "__main__":
     main()
+
+
+@rag_app.command("embed")
+def rag_embed(
+    strategy: Annotated[
+        str,
+        typer.Option("--strategy", "-s", help="Chunking strategy to embed."),
+    ] = "fixed_512",
+    model: Annotated[
+        str,
+        typer.Option("--model", help="Ollama embedding model."),
+    ] = "nomic-embed-text",
+) -> None:
+    """Embed all chunks and save FAISS index."""
+    import json as _json
+
+    from annrag.rag.embedder import OllamaEmbedder
+    from annrag.rag.index import VectorIndex
+    from annrag.rag.models import Chunk
+
+    settings = Settings()
+    artifacts_dir = settings.data_dir.parent / "artifacts"
+    chunks_path = artifacts_dir / f"chunks.{strategy}.jsonl"
+    slug = model.replace(":", "_").replace("-", "_")
+    index_dir = artifacts_dir / f"index.{strategy}.{slug}"
+
+    if not chunks_path.exists():
+        typer.echo(f"Chunks file not found: {chunks_path}")
+        typer.echo(f"Run: annrag rag chunk --strategy {strategy}")
+        raise typer.Exit(1)
+
+    typer.echo(f"Loading chunks from {chunks_path}...")
+    chunks = []
+    with open(chunks_path, encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                chunks.append(Chunk(**_json.loads(line)))
+
+    typer.echo(f"{len(chunks)} chunks loaded.")
+    typer.echo(f"Embedding with {model}...")
+
+    embedder = OllamaEmbedder(model=model)
+    index = VectorIndex(dim=embedder.dim)
+
+    batch_size = 50
+    for i in range(0, len(chunks), batch_size):
+        batch = chunks[i : i + batch_size]
+        texts = [c.text for c in batch]
+        vectors = embedder.embed_batch(texts)
+        index.add_batch(batch, vectors)
+        typer.echo(f"  {min(i + batch_size, len(chunks))} / {len(chunks)}")
+
+    index.save(index_dir)
+    typer.echo(f"\nDone! Index saved to {index_dir}")
+
+
+@rag_app.command("search")
+def rag_search(
+    query: Annotated[str, typer.Argument(help="Search query.")],
+    strategy: Annotated[str, typer.Option("--strategy", "-s")] = "fixed_512",
+    model: Annotated[str, typer.Option("--model")] = "nomic-embed-text",
+    top_k: Annotated[int, typer.Option("--top-k", "-k")] = 5,
+) -> None:
+    """Search the vector index with a query."""
+    from annrag.rag.embedder import OllamaEmbedder
+    from annrag.rag.index import VectorIndex
+
+    settings = Settings()
+    artifacts_dir = settings.data_dir.parent / "artifacts"
+    slug = model.replace(":", "_").replace("-", "_")
+    index_dir = artifacts_dir / f"index.{strategy}.{slug}"
+
+    if not index_dir.exists():
+        typer.echo(f"Index not found: {index_dir}")
+        typer.echo(f"Run: annrag rag embed --strategy {strategy}")
+        raise typer.Exit(1)
+
+    index = VectorIndex.load(index_dir)
+    embedder = OllamaEmbedder(model=model)
+
+    query_vec = embedder.embed(query)
+    results = index.search(query_vec, top_k=top_k)
+
+    typer.echo(f"\nQuery: {query!r}")
+    typer.echo(f"Top {top_k} results:\n")
+    for i, (chunk, score) in enumerate(results, 1):
+        typer.echo(f"[{i}] Score: {score:.4f} | Page: {chunk.source_page}")
+        typer.echo(f"    {chunk.text[:200]}...")
+        typer.echo()
