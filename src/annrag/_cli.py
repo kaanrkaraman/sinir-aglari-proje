@@ -521,3 +521,24 @@ def rag_eval(
         encoding="utf-8",
     )
     typer.echo(f"\nSaved to {out_path}")
+
+
+@rag_app.command("ask")
+def rag_ask_cmd(
+    question: Annotated[str, typer.Argument(help="Question to ask.")],
+    strategy: Annotated[str, typer.Option("--strategy", "-s")] = "fixed_512",
+    embed_model: Annotated[str, typer.Option("--embed-model")] = "nomic-embed-text",
+    llm_model: Annotated[str, typer.Option("--llm-model")] = "llama3:8b",
+    top_k: Annotated[int, typer.Option("--top-k", "-k")] = 5,
+    show_chunks: Annotated[bool, typer.Option("--show-chunks")] = False,
+) -> None:
+    from annrag.rag.pipeline import rag_ask
+    settings = Settings()
+    artifacts_dir = settings.data_dir.parent / "artifacts"
+    slug = embed_model.replace(":", "_").replace("-", "_")
+    index_dir = str(artifacts_dir / f"index.{strategy}.{slug}")
+    typer.echo(f"Question: {question}")
+    typer.echo("Generating answer...")
+    response = rag_ask(question=question, index_dir=index_dir, embedder_model=embed_model, llm_model=llm_model, top_k=top_k)
+    typer.echo(f"Answer:")
+    typer.echo(response.answer)
