@@ -45,15 +45,15 @@ Working principles (mandatory, see `pyproject.toml` for enforcement):
 | 3  | Wikivoyage XML ingestion + chunking             | ✅ done       | fixed_256/512/1024 + sentence, 1055 chunks (Wikivoyage API)        |
 | 4  | Embedding + vector index                        | ✅ done       | nomic-embed-text via Ollama, FAISS index                           |
 | 5  | Retrieval-only metrics (MRR, NDCG, Recall@k)    | ✅ done       | MRR=0.26, Recall@5=0.43, NDCG@5=0.35 (fixed_512)                 |
-| 6  | End-to-end RAG pipeline                         | ⬜            | Retrieve top-k → llama3:8b → answer; no-retrieval baseline         |
-| 7  | RAGAS integration                               | ⬜            | Faithfulness, Answer Relevance, Context Precision, Context Recall   |
+| 6  | End-to-end RAG pipeline                         | ✅ done       | retrieve top-5 + llama3:8b, annrag rag ask                         |
+| 7  | RAGAS integration                               | ✅ done       | faithfulness=0.40, context_recall=0.25 (Ollama, 5 queries)         |
 | 8  | Experiment grid sweep                           | ⬜            | Chunking × retrieval × embedding × top-k matrix                    |
 | 9  | Multi-turn / context-awareness ablation         | ⬜            | Compare single-turn vs multi-turn; cross-document multi-hop         |
 | 10 | Polish + reproducible runs + result tables      | ⬜            | Reproducible scripts, final result tables, report                   |
 
 ---
 
-## Current state (M5 done, M6 next)
+## Current state (M7 done, M8 next)
 
 ### M1 — Environment setup ✅
 - uv, ruff, ty, pytest, hatchling backend, src layout
@@ -96,21 +96,39 @@ Working principles (mandatory, see `pyproject.toml` for enforcement):
 - CLI: `annrag rag eval --strategy fixed_512`
 - Output: `artifacts/eval.<strategy>.<model>.json`
 
-### M6 — End-to-end RAG pipeline ⬜ (next)
-- Retrieve top-k chunks → feed to llama3:8b → generate answer
-- CLI: `annrag rag ask "question"`
+### M6 — End-to-end RAG pipeline ✅
+- Retrieve top-5 chunks → feed to llama3:8b → generate answer
+- CLI: `annrag rag ask "What is Singapore known for?"`
+
+### M7 — RAGAS Integration ✅
+- Evaluated 5 queries with RAGAS (Ollama backend)
+- Results:
+
+| Metric             | Score |
+| ------------------ | ----- |
+| Faithfulness       | 0.40  |
+| Answer Relevancy   | nan*  |
+| Context Precision  | nan*  |
+| Context Recall     | 0.25  |
+
+*nan = timeout (llama3:8b too slow for RAGAS async jobs on Mac)
+- CLI: `annrag rag ragas --limit 5`
+- Output: `artifacts/ragas.<strategy>.<model>.json`
+
+### M8 — Experiment Grid Sweep ⬜ (next)
+- Compare chunking strategies × top-k × embedding models
 
 ---
 
-## Resume actions (M6)
+## Resume actions (M8)
 
 ```bash
 # Ollama running?
 open -a Ollama
 ollama list   # llama3:8b and nomic-embed-text must be present
 
-# Ask a question end-to-end
-uv run annrag rag ask "What is the best time to visit Paris?"
+# Run grid sweep
+uv run annrag rag grid
 ```
 
 ---
